@@ -1,13 +1,38 @@
-; CreateTOs.ahk
-; Copyright (c) 2012, Daniel Smith http://scr.im/dansmith
-; License http://copyfree.org/licenses/mit/license.txt
-; 
-; PURPOSE:
-; 	Create a table occurrence for every table in the first external data source
-; 	in a FileMaker Pro database file.
-; 
-; VERSION 0.9.0.0
-; =============================================================================
+/**
+ * CreateTOs.ahk
+ * Copyright (c) 2012, Daniel Smith http://scr.im/dansmith
+ * License http://copyfree.org/licenses/mit/license.txt
+ * 
+ * PURPOSE:
+ * 	Create a table occurrence for every table in the first external data source
+ * 	in a FileMaker Pro database file.
+ * 
+ * PARAMETERS:
+ * 	-dataSourceName=<name>	Name of external data source to use.
+ *							Takes precedence over dataSourceNumber param.
+ *
+ * 	-dataSourceNumber=<#>	Number of external data source to use, based on
+ *							order in list of data sources.
+ *							1 = the first external data source
+ * 
+ * -prefix=<prefix>			Value to add to beginning of each table occurence
+ *							name.
+ * 
+ *	If no parameters are provided, thecurrent database file is used.
+ * 
+ * VERSION 0.9.0.0
+ * ============================================================================
+ */
+
+#Include <getopt>
+
+; build complete command line with all parameters
+Loop %0%
+{
+	cmdline := cmdline %A_Index% " "
+}
+; parse command line
+param := getopt(cmdline)
 
 
 ; block user input while script runs
@@ -26,6 +51,16 @@ Loop
 	{
 		WinWait, Manage Database
 		WinActivate
+		; wait for user to select Relationships tab
+		Loop
+		{
+			ControlGet, onCorrectTab, Visible,, Add Table, Manage Database,,,, NA
+			If onCorrectTab
+			{
+				break
+			}
+			Sleep, % sleepAfterAddATable
+		}
 		BlockInput, %BlockInputValue%
 	}
 
@@ -45,7 +80,7 @@ Loop
 			}
 			else
 			{
-				ControlClick, Button1, Manage Database,,,, NA
+				ControlClick, Add Table, Manage Database,,,, NA
 			}
 			; give window time to open
 			sleep, %sleepAfterAddATable%
@@ -59,8 +94,46 @@ Loop
 			BlockInput, %BlockInputValue%
 		}
 		
-		; select the data source then activate the list of tables
-		SendInput, {Down}{Tab}
+		; select the data source
+		If param.dataSourceName
+		{
+			string := param.dataSourceName
+			ControlGet, dataSourcePosition, FindString, %string%, ComboBox1, Specify Table
+			If ( dataSourcePosition > 1000 OR ErrorLevel )
+			{
+				BlockInput, off
+				MsgBox, 262192, An Error Occured, Data source not found: [%string%]
+				Exit
+			}
+			; offset position by 2, because there are always two entries before the first external data source
+			dataSourcePosition := dataSourcePosition - 2
+			string := "{Down " dataSourcePosition "}"
+			SendInput, % string
+		}
+		Else If param.dataSourceNumber
+		{
+			; validate dataSourceNumber parameter
+			ControlGet, List, List,, ComboBox1, Specify Table
+			count:=
+			Loop, parse, List, `n, `r
+			{
+				count++
+			}
+			; remove count of standard items in data source list (current file, separators, add, manage)
+			count := count - 6
+			If ( param.dataSourceNumber > count )
+			{
+				BlockInput, off
+				MsgBox, 262192, An Error Occured, Data source count exceeded.
+				Exit
+			}
+			string := "{Down " param.dataSourceNumber "}"
+			SendInput, % string
+		}
+		; else, select current file (which is selected by default)
+		
+		; move focus to list of tables
+		SendInput, {Tab}
 		; get count of Tables
 		ControlGet, count, List, Count, SysListView321, Specify Table
 		; if no tables exist, exit the loop
@@ -70,7 +143,9 @@ Loop
 		}
 		
 		; add first table to relationship graph
-		; select the table
+		
+		AddPrefix( param.prefix )
+		; add the table
 		SendInput {Enter}
 		; minimize the table
 		SendInput ^t
@@ -84,8 +159,11 @@ Loop
 		SendInput ^d
 		; modify it's source table
 		SendInput ^o
-		; select the next table in the list
-		SendInput {Tab}{Down}{Enter}
+		; activate the next table in the list
+		SendInput {Tab}{Down}
+		AddPrefix( param.prefix )
+		; add the table
+		SendInput {Enter}
 	}
 	
 	; move up to reduce space needed on relationship graph
@@ -96,3 +174,12 @@ Loop
 	i := i + 1
 	
 } Until i >= count
+
+
+AddPrefix(prefix)
+{
+	If prefix
+	{
+		SendInput {Tab}{Home}%prefix%
+	}
+}
