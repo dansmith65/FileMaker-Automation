@@ -1,13 +1,35 @@
-; CreateTOs.ahk
-; Copyright (c) 2012, Daniel Smith http://scr.im/dansmith
-; License http://copyfree.org/licenses/mit/license.txt
-; 
-; PURPOSE:
-; 	Create a table occurrence for every table in the first external data source
-; 	in a FileMaker Pro database file.
-; 
-; VERSION 0.9.0.0
-; =============================================================================
+/**
+ * CreateTOs.ahk
+ * Copyright (c) 2012, Daniel Smith http://scr.im/dansmith
+ * License http://copyfree.org/licenses/mit/license.txt
+ * 
+ * PURPOSE:
+ * 	Create a table occurrence for every table in the first external data source
+ * 	in a FileMaker Pro database file.
+ * 
+ * PARAMETERS:
+ * 	-dataSourceName=<name>	Name of external data source to use.
+ *							Takes precedence over dataSourceNumber param.
+ *
+ * 	-dataSourceNumber=<#>	Number of external data source to use, based on
+ *							order in list of data sources.
+ *							1 = the first external data source
+ * 
+ *	If no parameters are provided, thecurrent database file is used.
+ * 
+ * VERSION 0.9.0.0
+ * ============================================================================
+ */
+
+#Include <getopt>
+
+; build complete command line with all parameters
+Loop %0%
+{
+	cmdline := cmdline %A_Index% " "
+}
+; parse command line
+param := getopt(cmdline)
 
 
 ; block user input while script runs
@@ -59,8 +81,46 @@ Loop
 			BlockInput, %BlockInputValue%
 		}
 		
-		; select the data source then activate the list of tables
-		SendInput, {Down}{Tab}
+		; select the data source
+		If param.dataSourceName
+		{
+			temp := param.dataSourceName
+			ControlGet, dataSourcePosition, FindString, %temp%, ComboBox1, Specify Table
+			If ( dataSourcePosition > 1000 OR ErrorLevel )
+			{
+				BlockInput, off
+				MsgBox, 262192, An Error Occured, Data source not found: [%temp%]
+				Exit
+			}
+			; offset position by 2, because there are always two entries before the first external data source
+			dataSourcePosition := dataSourcePosition - 2
+			temp := "{Down " dataSourcePosition "}"
+			SendInput, % temp
+		}
+		Else If param.dataSourceNumber
+		{
+			; validate dataSourceNumber parameter
+			ControlGet, List, List,, ComboBox1, Specify Table
+			count:=
+			Loop, parse, List, `n, `r
+			{
+				count++
+			}
+			; remove count of standard items in data source list (current file, separators, add, manage)
+			count := count - 6
+			If ( param.dataSourceNumber > count )
+			{
+				BlockInput, off
+				MsgBox, 262192, An Error Occured, Data source count exceeded.
+				Exit
+			}
+			temp := "{Down " param.dataSourceNumber "}"
+			SendInput, % temp
+		}
+		; else, select current file (which is selected by default)
+		
+		; move focus to list of tables
+		SendInput, {Tab}
 		; get count of Tables
 		ControlGet, count, List, Count, SysListView321, Specify Table
 		; if no tables exist, exit the loop
