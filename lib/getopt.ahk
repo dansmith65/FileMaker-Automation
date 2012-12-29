@@ -18,8 +18,8 @@ getopt(parms)
         
         RegExMatch(parms,regex,data) 
         
-        name := data1
-        value := data2
+        name := Trim(data1)
+        value := Trim(data2)
         value := RegExReplace(value , "<dash>", "-")   ; change <dash> back to -
         
                 
