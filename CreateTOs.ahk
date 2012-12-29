@@ -15,6 +15,9 @@
  *							order in list of data sources.
  *							1 = the first external data source
  * 
+ * -prefix=<prefix>			Value to add to beginning of each table occurence
+ *							name.
+ * 
  *	If no parameters are provided, thecurrent database file is used.
  * 
  * VERSION 0.9.0.0
@@ -130,7 +133,9 @@ Loop
 		}
 		
 		; add first table to relationship graph
-		; select the table
+		
+		AddPrefix( param.prefix )
+		; add the table
 		SendInput {Enter}
 		; minimize the table
 		SendInput ^t
@@ -144,8 +149,11 @@ Loop
 		SendInput ^d
 		; modify it's source table
 		SendInput ^o
-		; select the next table in the list
-		SendInput {Tab}{Down}{Enter}
+		; activate the next table in the list
+		SendInput {Tab}{Down}
+		AddPrefix( param.prefix )
+		; add the table
+		SendInput {Enter}
 	}
 	
 	; move up to reduce space needed on relationship graph
@@ -156,3 +164,12 @@ Loop
 	i := i + 1
 	
 } Until i >= count
+
+
+AddPrefix(prefix)
+{
+	If prefix
+	{
+		SendInput {Tab}{Home}%prefix%
+	}
+}
