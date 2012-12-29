@@ -51,6 +51,16 @@ Loop
 	{
 		WinWait, Manage Database
 		WinActivate
+		; wait for user to select Relationships tab
+		Loop
+		{
+			ControlGet, onCorrectTab, Visible,, Add Table, Manage Database,,,, NA
+			If onCorrectTab
+			{
+				break
+			}
+			Sleep, % sleepAfterAddATable
+		}
 		BlockInput, %BlockInputValue%
 	}
 
@@ -70,7 +80,7 @@ Loop
 			}
 			else
 			{
-				ControlClick, Button1, Manage Database,,,, NA
+				ControlClick, Add Table, Manage Database,,,, NA
 			}
 			; give window time to open
 			sleep, %sleepAfterAddATable%
