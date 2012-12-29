@@ -97,18 +97,18 @@ Loop
 		; select the data source
 		If param.dataSourceName
 		{
-			temp := param.dataSourceName
-			ControlGet, dataSourcePosition, FindString, %temp%, ComboBox1, Specify Table
+			string := param.dataSourceName
+			ControlGet, dataSourcePosition, FindString, %string%, ComboBox1, Specify Table
 			If ( dataSourcePosition > 1000 OR ErrorLevel )
 			{
 				BlockInput, off
-				MsgBox, 262192, An Error Occured, Data source not found: [%temp%]
+				MsgBox, 262192, An Error Occured, Data source not found: [%string%]
 				Exit
 			}
 			; offset position by 2, because there are always two entries before the first external data source
 			dataSourcePosition := dataSourcePosition - 2
-			temp := "{Down " dataSourcePosition "}"
-			SendInput, % temp
+			string := "{Down " dataSourcePosition "}"
+			SendInput, % string
 		}
 		Else If param.dataSourceNumber
 		{
@@ -127,8 +127,8 @@ Loop
 				MsgBox, 262192, An Error Occured, Data source count exceeded.
 				Exit
 			}
-			temp := "{Down " param.dataSourceNumber "}"
-			SendInput, % temp
+			string := "{Down " param.dataSourceNumber "}"
+			SendInput, % string
 		}
 		; else, select current file (which is selected by default)
 		
