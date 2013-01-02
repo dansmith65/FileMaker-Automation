@@ -15,7 +15,7 @@
  *							order in list of data sources.
  *							1 = the first external data source
  * 
- * -prefix=<prefix>			Value to add to beginning of each table occurence
+ * 	-prefix=<prefix>		Value to add to beginning of each table occurence
  *							name.
  * 
  *	If no parameters are provided, thecurrent database file is used.
