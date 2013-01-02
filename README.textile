@@ -1,0 +1,25 @@
+h1. WHAT
+
+Scripts for automating repetitive tasks in FileMaker Pro.
+
+h1. WHY
+
+Repetitive tasks are for computers, not humans.
+
+h1. HOW
+
+"AutoHotkey_L":http://l.autohotkey.net scripts for Windows. These scripts have been compiled into executable files (found in the "bin" directory). To use a script, run it (with parameters, if needed) then open the appropriate window in FileMaker Pro where the automation should happen, as soon as the script detects the appropriate window is open, it will start working it's magic.
+
+This project currently does not contain any scripts for Mac users, but I'm assuming something similar could be done with AppleScript.
+
+h1. DOCUMENTATION
+
+The documentation is in the source code of each script.
+
+h1. VERSIONING
+
+Each script maintains it's own version, there is currently no version number for the entire project.
+
+h1. LICENCE
+
+This project is released under the standard MIT license, which is included with this project in the LICENSE.txt file, or available here: http://copyfree.org/licenses/mit/license.txt
